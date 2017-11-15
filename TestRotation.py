@@ -7,15 +7,17 @@ class Coord:
     """Coordinate class"""
     x = None
     y = None
+    intensity = None
 
-    def __init__(self, xValue, yValue):
+    def __init__(self, xValue, yValue, intensityValue):
         self.x = xValue
         self.y = yValue
+        self.intensity = intensityValue
 
     def __str__(self):
         """return string of coord"""
         #formatted_X = "%02d" % x
-        return "( %.2f" % self.x + ", %.2f" % self.y + ")"
+        return "( %.2f" % self.x + ", %.2f" % self.y + ", " + str(self.intensity) + ")"
 
 
 def getCentroid(image):
@@ -53,7 +55,7 @@ def initializeCoordMatrix(image):
     for ii in range(N):
         newline = []
         for jj in range(M):
-            newline.append(Coord(ii, jj))
+            newline.append(Coord(ii, jj, image[ii][jj]))
         coordMatrix.append(newline)
     return coordMatrix
 
@@ -70,7 +72,6 @@ def printImageCoordMatrix(imageCoordMatrix):
 
 def getRotatedCoordMatrix(image, angle):
     """ Get Rotated Coords as Coord Matrix """
-
     input_coords = initializeCoordMatrix(image)
     rotated_coords = []
     centroid = getCentroid(image)
@@ -82,15 +83,52 @@ def getRotatedCoordMatrix(image, angle):
         for jj in range(M):
             x = eachInputLine[jj].x
             y = eachInputLine[jj].y
+            intensity = eachInputLine[jj].intensity
             vec = makeVector(x, y, centroid)
             rotvec = rotateVector(vec, angle)
             rotX = float(rotvec[0][0])
             rotY = float(rotvec[1][0])
-            eachRotatedLine.append(Coord(centroid[0] + rotX , centroid[1] - rotY))
+            eachRotatedLine.append(Coord(centroid[0] + rotX , centroid[1] - rotY, intensity))
         rotated_coords.append(eachRotatedLine)
     return rotated_coords
 
+def getMinRowColRotatedCoords(rotated_coord_matrix):
+    """ Return integer minimum Row of rotated coordinate matrix """
+    N = len(rotated_coord_matrix)
+    minRow = None
+    minCol = None
+    for ii in range(N):
+        M = len(rotated_coord_matrix[ii])
+        eachInputLine = rotated_coord_matrix[ii]
+        for jj in range(M):
+            rowValue = eachInputLine[jj].y
+            colValue = eachInputLine[jj].x
+            if minRow is None or rowValue < minRow:
+                minRow = rowValue
+            if minCol is None or colValue < minCol:
+                minCol = colValue
+    minRowInt = round(minRow)
+    minColInt = round(minCol)
+    return (minRowInt, minColInt)
 
+def getMaxRowColRotatedCoords(rotated_coord_matrix):
+    """ Return integer minimum Row of rotated coordinate matrix """
+    N = len(rotated_coord_matrix)
+    maxRow = None
+    maxCol = None
+    for ii in range(N):
+        M = len(rotated_coord_matrix[ii])
+        eachInputLine = rotated_coord_matrix[ii]
+        for jj in range(M):
+            rowValue = eachInputLine[jj].y
+            colValue = eachInputLine[jj].x
+            if maxRow is None or rowValue > maxRow:
+                maxRow = rowValue
+            if maxCol is None or colValue > maxCol:
+                maxCol = colValue
+    maxRowInt = round(maxRow)
+    maxColInt = round(maxCol)
+    return (maxRowInt, maxColInt)
 
 lenna = cv2.imread("lennaGreySmall.png")
 lenna = cv2.cvtColor(lenna, cv2.COLOR_RGB2GRAY)
@@ -107,9 +145,14 @@ inputCoordMatrix = initializeCoordMatrix(lenna)
 
 printImageCoordMatrix(inputCoordMatrix)
 
-rotatedCoordMatrix = getRotatedCoordMatrix(lenna, 45) # positive angle is counter clockwise
+rotatedCoordMatrix = getRotatedCoordMatrix(lenna, 22.5) # positive angle is counter clockwise
 
 printImageCoordMatrix(rotatedCoordMatrix)
+
+
+print("\n\nMinimum Row, Column :", getMinRowColRotatedCoords(rotatedCoordMatrix))
+print("Maximum Row, Column :", getMaxRowColRotatedCoords(rotatedCoordMatrix))
+
 
 
 
