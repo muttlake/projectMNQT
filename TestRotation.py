@@ -2,6 +2,22 @@ import numpy as np
 import cv2
 import printImage as pim
 
+
+class Coord:
+    """Coordinate class"""
+    x = None
+    y = None
+
+    def __init__(self, xValue, yValue):
+        self.x = xValue
+        self.y = yValue
+
+    def __str__(self):
+        """return string of coord"""
+        #formatted_X = "%02d" % x
+        return "( %.2f" % self.x + ", %.2f" % self.y + ")"
+
+
 def getCentroid(image):
     """Return center of image"""
     centerX = 0.0
@@ -31,16 +47,50 @@ def makeVector(x, y, centroid):
     yV = centerY - y
     return [[xV], [yV]]
 
-# def rotateImage(image):
-#     (N, M) = image.shape
-#     centroid = getCentroid(image)
-#     for y in range(M):
-#         for x in range(N):
-#             vec = makeVector(x, y, centroid)
-#             rotvec = rotateVector(vec, 45)
-#             print("\n(X = ", x, " Y = ", y, ")")
-#             print("Vec: ", vec)
-#             print("Vec Rotated 45°:", rotvec)
+def initializeCoordMatrix(image):
+    coordMatrix = []
+    (N, M) = image.shape
+    for ii in range(N):
+        newline = []
+        for jj in range(M):
+            newline.append(Coord(ii, jj))
+        coordMatrix.append(newline)
+    return coordMatrix
+
+def printImageCoordMatrix(imageCoordMatrix):
+    """ Image Coord Matrix is 2D matrix """
+    print("\n\n")
+    N = len(imageCoordMatrix)
+    for ii in range(N):
+        M = len(imageCoordMatrix[ii])
+        eachLine = imageCoordMatrix[ii]
+        for jj in range(M):
+            print(eachLine[jj], end="\t")
+        print("", end="\n")
+
+def getRotatedCoordMatrix(image, angle):
+    """ Get Rotated Coords as Coord Matrix """
+
+    input_coords = initializeCoordMatrix(image)
+    rotated_coords = []
+    centroid = getCentroid(image)
+    N = len(input_coords)
+    for ii in range(N):
+        M = len(input_coords[ii])
+        eachInputLine = input_coords[ii]
+        eachRotatedLine = []
+        for jj in range(M):
+            x = eachInputLine[jj].x
+            y = eachInputLine[jj].y
+            vec = makeVector(x, y, centroid)
+            rotvec = rotateVector(vec, angle)
+            rotX = float(rotvec[0][0])
+            rotY = float(rotvec[1][0])
+            eachRotatedLine.append(Coord(centroid[0] + rotX , centroid[1] - rotY))
+        rotated_coords.append(eachRotatedLine)
+    return rotated_coords
+
+
 
 lenna = cv2.imread("lennaGreySmall.png")
 lenna = cv2.cvtColor(lenna, cv2.COLOR_RGB2GRAY)
@@ -53,15 +103,16 @@ print("Centroid of image: ", getCentroid(lenna))
 
 pim.printUnsignedImage(lenna)
 
-(N, M) = lenna.shape
-centroid = getCentroid(lenna)
-for y in range(M):
-    for x in range(N):
-        vec = makeVector(x, y, centroid)
-        rotvec = rotateVector(vec, 45)
-        print("\n(X = ", x, " Y = ", y, ")")
-        print("Vec: ", vec)
-        print("Vec Rotated 45°:", rotvec)
+inputCoordMatrix = initializeCoordMatrix(lenna)
+
+printImageCoordMatrix(inputCoordMatrix)
+
+rotatedCoordMatrix = getRotatedCoordMatrix(lenna, 45) # positive angle is counter clockwise
+
+printImageCoordMatrix(rotatedCoordMatrix)
+
+
+
 
 
 
