@@ -130,6 +130,38 @@ def getMaxRowColRotatedCoords(rotated_coord_matrix):
     maxColInt = round(maxCol)
     return (maxRowInt, maxColInt)
 
+def makeEmptyRotatedImage(rotated_coord_matrix):
+    """ Return empty rotated image without intensities but for full extent """
+    (minRow, minCol) = getMinRowColRotatedCoords(rotated_coord_matrix)
+    (maxRow, maxCol) = getMaxRowColRotatedCoords(rotated_coord_matrix)
+
+    numRows = maxRow - minRow
+    numCols = maxCol - minCol
+
+    return np.zeros((numRows, numCols), np.uint8)
+
+def temporaryNearestNeighborRotatedImage(image, angle):
+    """Return nearest neighbor rotated image"""
+    rotatedCoordMatrix = getRotatedCoordMatrix(image, angle)  # positive angle is counter clockwise
+    (minRotRow, minRotCol) = getMinRowColRotatedCoords(rotatedCoordMatrix)
+    (maxRotRow, maxRotCol) = getMaxRowColRotatedCoords(rotatedCoordMatrix)
+    rotated_image = makeEmptyRotatedImage(rotatedCoordMatrix)
+    (N, M) = rotated_image.shape
+    for ii in range(N):
+        MR = len(rotatedCoordMatrix[ii])
+        eachInputLine = rotatedCoordMatrix[ii]
+        for jj in range(MR):
+            imageRow = eachInputLine[jj].y - minRotRow
+            imageCol = eachInputLine[jj].x - minRotCol
+            print("Current image row: ", imageRow)
+            print("Current image col: ", imageCol)
+            intensity = eachInputLine[jj].intensity
+            #rotated_image[imageRow][imageCol] = intensity
+    # return rotated_image
+
+
+
+
 lenna = cv2.imread("lennaGreySmall.png")
 lenna = cv2.cvtColor(lenna, cv2.COLOR_RGB2GRAY)
 
@@ -154,8 +186,12 @@ print("\n\nMinimum Row, Column :", getMinRowColRotatedCoords(rotatedCoordMatrix)
 print("Maximum Row, Column :", getMaxRowColRotatedCoords(rotatedCoordMatrix))
 
 
+empty_image = makeEmptyRotatedImage(rotatedCoordMatrix)
+pim.printUnsignedImage(empty_image)
+print("Empty image shape: ", empty_image.shape)
 
 
-
-
+rotated_image = temporaryNearestNeighborRotatedImage(lenna, 45)
+cv2.imshow(rotated_image)
+cv2.waitKey()
 
