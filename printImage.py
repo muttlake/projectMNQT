@@ -1,6 +1,6 @@
 def printUnsignedImage(image):
     (N, M) = image.shape
-    if N < 20:
+    if N < 25:
         for i in range(N):
             for j in range(M):
                 print('{: <8}'.format(image[i][j]), "  " , end=""),

@@ -107,8 +107,8 @@ def getMinRowColRotatedCoords(rotated_coord_matrix):
                 minRow = rowValue
             if minCol is None or colValue < minCol:
                 minCol = colValue
-    minRowInt = round(minRow)
-    minColInt = round(minCol)
+    minRowInt = int(np.round(minRow))
+    minColInt = int(np.round(minCol))
     return (minRowInt, minColInt)
 
 def getMaxRowColRotatedCoords(rotated_coord_matrix):
@@ -126,8 +126,8 @@ def getMaxRowColRotatedCoords(rotated_coord_matrix):
                 maxRow = rowValue
             if maxCol is None or colValue > maxCol:
                 maxCol = colValue
-    maxRowInt = round(maxRow)
-    maxColInt = round(maxCol)
+    maxRowInt = int(np.round(maxRow))
+    maxColInt = int(np.round(maxCol))
     return (maxRowInt, maxColInt)
 
 def makeEmptyRotatedImage(rotated_coord_matrix):
@@ -135,8 +135,8 @@ def makeEmptyRotatedImage(rotated_coord_matrix):
     (minRow, minCol) = getMinRowColRotatedCoords(rotated_coord_matrix)
     (maxRow, maxCol) = getMaxRowColRotatedCoords(rotated_coord_matrix)
 
-    numRows = maxRow - minRow
-    numCols = maxCol - minCol
+    numRows = maxRow - minRow + 1
+    numCols = maxCol - minCol + 1
 
     return np.zeros((numRows, numCols), np.uint8)
 
@@ -144,25 +144,25 @@ def temporaryNearestNeighborRotatedImage(image, angle):
     """Return nearest neighbor rotated image"""
     rotatedCoordMatrix = getRotatedCoordMatrix(image, angle)  # positive angle is counter clockwise
     (minRotRow, minRotCol) = getMinRowColRotatedCoords(rotatedCoordMatrix)
-    (maxRotRow, maxRotCol) = getMaxRowColRotatedCoords(rotatedCoordMatrix)
+
     rotated_image = makeEmptyRotatedImage(rotatedCoordMatrix)
-    (N, M) = rotated_image.shape
-    for ii in range(N):
+    NR = len(rotatedCoordMatrix)
+    for ii in range(NR):
         MR = len(rotatedCoordMatrix[ii])
         eachInputLine = rotatedCoordMatrix[ii]
         for jj in range(MR):
-            imageRow = eachInputLine[jj].y - minRotRow
-            imageCol = eachInputLine[jj].x - minRotCol
+            imageRow = int(np.round(eachInputLine[jj].y)) + -1*minRotRow
+            imageCol = int(np.round(eachInputLine[jj].x)) + -1*minRotCol
             print("Current image row: ", imageRow)
             print("Current image col: ", imageCol)
             intensity = eachInputLine[jj].intensity
-            #rotated_image[imageRow][imageCol] = intensity
-    # return rotated_image
+            rotated_image[imageRow][imageCol] = intensity
+    return rotated_image
 
 
 
 
-lenna = cv2.imread("lennaGreySmall.png")
+lenna = cv2.imread("Lenna.png")
 lenna = cv2.cvtColor(lenna, cv2.COLOR_RGB2GRAY)
 
 print("Lenna shape: ", lenna.shape)
@@ -177,7 +177,7 @@ inputCoordMatrix = initializeCoordMatrix(lenna)
 
 printImageCoordMatrix(inputCoordMatrix)
 
-rotatedCoordMatrix = getRotatedCoordMatrix(lenna, 22.5) # positive angle is counter clockwise
+rotatedCoordMatrix = getRotatedCoordMatrix(lenna, 45) # positive angle is counter clockwise
 
 printImageCoordMatrix(rotatedCoordMatrix)
 
@@ -192,6 +192,6 @@ print("Empty image shape: ", empty_image.shape)
 
 
 rotated_image = temporaryNearestNeighborRotatedImage(lenna, 45)
-cv2.imshow(rotated_image)
+cv2.imshow("Rotated Image", rotated_image)
 cv2.waitKey()
 
